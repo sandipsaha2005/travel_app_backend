@@ -1,0 +1,10 @@
+node_modules/*
+static/*
+database/*.txt
+*.jpg
+*.png
+*.jpeg
+*.pdf
+*.zip
+*.sql
+*.txt   
