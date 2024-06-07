@@ -25,36 +25,40 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: [true, "Please enter the city"],
     },
-    location: {
+    priceRange: {
         type: String,
-        required: [true, "Please enter the location"],
-        minLength: [50, "Job location must contain at least 50 characters"],
-    },
-    price: {
-        type: Number,
-        min: [0, "Costing must be a positive number"],
-    },
-    minCoast: {
-        type: Number,
-        min: [0, "Minimum cost must be a positive number"],
-    },
-    maxCoast: {
-        type: Number,
-        min: [0, "Maximum cost must be a positive number"],
-    },
-    expired: {
-        type: Boolean,
-        default: false,
     },
     postedOn: {
         type: Date,
         default: Date.now,
     },
+    // postedBy: {
+    //     type: mongoose.Schema.ObjectId,
+    //     ref: 'User',
+    //     required: true,
+    // },
     postedBy: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
-        required: true,
-    }
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        role: {
+          type: String,
+          enum: ["Employer"],
+          required: true,
+        },
+      },
+    image: {
+        public_id: {
+          type: String, 
+          required: true,
+        },
+        url: {
+          type: String, 
+          required: true,
+        },
+      },
 });
 
 export const Post = mongoose.model("Post", postSchema);
