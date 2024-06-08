@@ -178,18 +178,18 @@ export const postDestinatioin = async (req, res, next) => {
     });
   };
 
-export const getMyPost=catchAsyncError(async(req,res,next)=>{
-    const {role}=req.user;
-    if(role==='Job Seeker'){
-        return next(new ErrorHandler("Job seeker aren't allowed to get access of this resource",400));
-    }
-    const myPost= await Post.find({postedBy:req.user._id});
-    res.status().json({
+export const getPost=catchAsyncError(async(req,res,next)=>{
+    const {id}=req.params;
+    const post= await Post.findById(id);
+    if (!post) {
+      return next(new ErrorHandler('Post not found', 404));
+  }
+    res.status(200).json({
         success:true,
-
-        myPost,
+        post,
     })
 })
+
 
 export const updatePost = catchAsyncError(async (req, res, next) => {
 
