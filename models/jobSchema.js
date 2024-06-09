@@ -1,5 +1,16 @@
 import mongoose from "mongoose";
 
+const imageSchema = new mongoose.Schema({
+  public_id: {
+    type: String,
+    required: true,
+  },
+  url: {
+    type: String,
+    required: true,
+  },
+});
+
 const postSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -11,7 +22,7 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: [true, "Please enter the job description"],
         minLength: [3, "Job description must contain at least 3 characters"],
-        maxLength: [350, "Job description cannot exceed 350 characters"],
+        maxLength: [3500, "Job description cannot exceed 350 characters"],
     },
     category: {
         type: String,
@@ -32,11 +43,7 @@ const postSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    // postedBy: {
-    //     type: mongoose.Schema.ObjectId,
-    //     ref: 'User',
-    //     required: true,
-    // },
+
     postedBy: {
         user: {
           type: mongoose.Schema.Types.ObjectId,
@@ -49,16 +56,15 @@ const postSchema = new mongoose.Schema({
           required: true,
         },
       },
-    image: {
-        public_id: {
-          type: String, 
-          required: true,
-        },
-        url: {
-          type: String, 
-          required: true,
-        },
+      images: {
+        type: [imageSchema],
+        required: true,
+        validate: [arrayLimit, '{PATH} exceeds the limit of 5']
       },
 });
+
+function arrayLimit(val) {
+  return val.length <= 5;
+}
 
 export const Post = mongoose.model("Post", postSchema);

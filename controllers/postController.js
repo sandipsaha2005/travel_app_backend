@@ -112,28 +112,118 @@ export const getAllPosts = catchAsyncError(async (req, res, next) => {
 //     })
 // })
 
-export const postDestinatioin = async (req, res, next) => {
-    const { role } = req.user;
-    if (role != "Employer") {
-      return next(
-        new ErrorHandler("Only Employers are allowed to access this resource.", 400)
-      );
-    }
-    if (!req.files || Object.keys(req.files).length === 0) {
-      return next(new ErrorHandler("image File Required!", 400));
-    }
+// export const postDestinatioin = async (req, res, next) => {
+//     const { role } = req.user;
+//     if (role != "Employer") {
+//       return next(
+//         new ErrorHandler("Only Employers are allowed to access this resource.", 400)
+//       );
+//     }
+//     if (!req.files || Object.keys(req.files).length === 0) {
+//       return next(new ErrorHandler("image File Required!", 400));
+//     }
   
-    const { image } = req.files;
-    const allowedFormats = ["image/png", "image/jpeg", "image/webp"];
+//     const { image } = req.files;
+//     // const allowedFormats = ["image/png", "image/jpeg", "image/webp"];
+
+//     // if (!allowedFormats.includes(image.mimeType)) {
+//     //   return next(
+//     //     new ErrorHandler("Invalid file type. Please upload a PNG file.", 400)
+//     //   );
+//     // }
+//     // const cloudinaryResponse = await cloudinary.uploader.upload(
+//     //   image.tempFilePath
+//     // );
+  
+//     // if (!cloudinaryResponse || cloudinaryResponse.error) {
+//     //   console.error(
+//     //     "Cloudinary Error:",
+//     //     cloudinaryResponse.error || "Unknown Cloudinary error"
+//     //   );
+//     //   return next(new ErrorHandler("Failed to upload image to Cloudinary", 500));
+//     // }
+
+//     if (!image) {
+//       return next(new ErrorHandler("No image file uploaded.", 400));
+//     }
+    
+//     const allowedFormats = ["image/png", "image/jpeg", "image/webp"];
+    
+//     // Check if mimetype is available before accessing it
+//     if (!image.mimetype || !allowedFormats.includes(image.mimetype)) {
+//       return next(
+//         new ErrorHandler("Invalid file type. Please upload a PNG, JPEG, or WEBP file.", 400)
+//       );
+//     }
+
+
+//     const { title, category, country, city, description, priceRange } = req.body;
+//     const postedBy = {
+//       user: req.user._id,
+//       role: "Employer",
+//     };
+//     if (
+//       !title ||
+//       !category ||
+//       !country ||
+//       !city ||
+//       !description ||
+//       !priceRange ||
+//       !postedBy ||
+//       !image
+//     ) {
+//       return next(new ErrorHandler("Please fill all fields.", 400));
+//     }
+//     const Destination = await Post.create({
+//         title,
+//         category,
+//         country,
+//         city,
+//         description,
+//         priceRange,
+//         postedBy,
+//         image: {
+//           public_id: cloudinaryResponse.public_id,
+//           url: cloudinaryResponse.secure_url,
+//       },
+//     });
+//     res.status(200).json({
+//       success: true,
+//       message: "Post Created Successfully",
+//       Destination,
+//     });
+//   };
+
+export const postDestinatioin = async (req, res, next) => {
+  const { role } = req.user;
+  if (role !== "Employer") {
+    return next(
+      new ErrorHandler("Only Employers are allowed to access this resource.", 400)
+    );
+  }
+  if (!req.files || Object.keys(req.files).length === 0) {
+    return next(new ErrorHandler("Image files are required!", 400));
+  }
+
+  const images = req.files.images;
+
+  if (!Array.isArray(images) || images.length > 5) {
+    return next(new ErrorHandler("You can upload up to 5 images.", 400));
+  }
+
+  const allowedFormats = ["image/png", "image/jpeg", "image/webp","image/avif"];
+  const uploadedImages = [];
+
+  for (let image of images) {
+    console.log(image);
     if (!allowedFormats.includes(image.mimetype)) {
       return next(
-        new ErrorHandler("Invalid file type. Please upload a PNG file.", 400)
+        new ErrorHandler("Invalid file type. Please upload PNG, JPEG, or WEBP files.", 400)
       );
     }
-    const cloudinaryResponse = await cloudinary.uploader.upload(
-      image.tempFilePath
-    );
-  
+
+    const cloudinaryResponse = await cloudinary.uploader.upload(image.tempFilePath);
+    
     if (!cloudinaryResponse || cloudinaryResponse.error) {
       console.error(
         "Cloudinary Error:",
@@ -141,42 +231,48 @@ export const postDestinatioin = async (req, res, next) => {
       );
       return next(new ErrorHandler("Failed to upload image to Cloudinary", 500));
     }
-    const { title, category, country, city, description, priceRange } = req.body;
-    const postedBy = {
-      user: req.user._id,
-      role: "Employer",
-    };
-    if (
-      !title ||
-      !category ||
-      !country ||
-      !city ||
-      !description ||
-      !priceRange ||
-      !postedBy ||
-      !image
-    ) {
-      return next(new ErrorHandler("Please fill all fields.", 400));
-    }
-    const Destination = await Post.create({
-        title,
-        category,
-        country,
-        city,
-        description,
-        priceRange,
-        postedBy,
-      image: {
-        public_id: cloudinaryResponse.public_id,
-        url: cloudinaryResponse.secure_url,
-      },
+
+    uploadedImages.push({
+      public_id: cloudinaryResponse.public_id,
+      url: cloudinaryResponse.secure_url,
     });
-    res.status(200).json({
-      success: true,
-      message: "Post Created Successfully",
-      Destination,
-    });
+  }
+
+  const { title, category, country, city, description, priceRange } = req.body;
+  const postedBy = {
+    user: req.user._id,
+    role: "Employer",
   };
+
+  if (
+    !title ||
+    !category ||
+    !country ||
+    !city ||
+    !description ||
+    !priceRange ||
+    !postedBy
+  ) {
+    return next(new ErrorHandler("Please fill all fields.", 400));
+  }
+
+  const Destination = await Post.create({
+    title,
+    category,
+    country,
+    city,
+    description,
+    priceRange,
+    postedBy,
+    images: uploadedImages,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Post Created Successfully",
+    Destination,
+  });
+};
 
 export const getPost=catchAsyncError(async(req,res,next)=>{
     const {id}=req.params;
