@@ -1,6 +1,6 @@
 import { catchAsyncError } from '../middlewares/catchAsyncError.js';
 import ErrorHandler from '../middlewares/error.js';
-import { Post } from '../models/jobSchema.js';
+import { Post } from '../models/postSchema.js';
 import path from 'path'
 import multer from 'multer';
 import { log } from 'console';
@@ -207,15 +207,17 @@ export const postDestinatioin = async (req, res, next) => {
 
   const images = req.files.images;
 
-  if (!Array.isArray(images) || images.length > 5) {
-    return next(new ErrorHandler("You can upload up to 5 images.", 400));
+  if (!Array.isArray(images) || images.length > 6) {
+    return next(new ErrorHandler("You can upload up to 6 images.", 400));
   }
 
   const allowedFormats = ["image/png", "image/jpeg", "image/webp","image/avif"];
   const uploadedImages = [];
 
+
+
   for (let image of images) {
-    console.log(image);
+    // console.log(image);
     if (!allowedFormats.includes(image.mimetype)) {
       return next(
         new ErrorHandler("Invalid file type. Please upload PNG, JPEG, or WEBP files.", 400)
@@ -238,7 +240,8 @@ export const postDestinatioin = async (req, res, next) => {
     });
   }
 
-  const { title, category, country, city, description, priceRange } = req.body;
+
+  const { title, category, country, city, description, priceRange,todo1,todo2,todo3,todo4,neighburHood,guideName,lat,lng } = req.body;
   const postedBy = {
     user: req.user._id,
     role: "Employer",
@@ -251,10 +254,20 @@ export const postDestinatioin = async (req, res, next) => {
     !city ||
     !description ||
     !priceRange ||
-    !postedBy
+    !postedBy ||
+    !todo1 ||
+    !todo2 ||
+    !todo3 ||
+    !todo4 ||
+    !neighburHood ||
+    !guideName ||
+    !lat ||
+    !lng
+
   ) {
     return next(new ErrorHandler("Please fill all fields.", 400));
   }
+  console.log(guideName);
 
   const Destination = await Post.create({
     title,
@@ -265,6 +278,16 @@ export const postDestinatioin = async (req, res, next) => {
     priceRange,
     postedBy,
     images: uploadedImages,
+    todo1,
+    todo2,
+    todo3,
+    todo4,
+    neighburHood,
+    guideName,
+    lat,
+    lng,
+    
+
   });
 
   res.status(200).json({
@@ -280,6 +303,7 @@ export const getPost=catchAsyncError(async(req,res,next)=>{
     if (!post) {
       return next(new ErrorHandler('Post not found', 404));
   }
+  console.log(post);
     res.status(200).json({
         success:true,
         post,

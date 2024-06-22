@@ -15,18 +15,18 @@ const postSchema = new mongoose.Schema({
     title: {
         type: String,
         required: [true, "Please enter the job title"],
-        minLength: [3, "Job title must contain at least 3 characters"],
-        maxLength: [50, "Job title cannot exceed 50 characters"],
+        minLength: [3, "Post title must contain at least 3 characters"],
+        // maxLength: [50, "Post title cannot exceed 50 characters"],
     },
     description: {
         type: String,
         required: [true, "Please enter the job description"],
-        minLength: [3, "Job description must contain at least 3 characters"],
-        maxLength: [3500, "Job description cannot exceed 350 characters"],
+        minLength: [3, "Post description must contain at least 30 characters"],
+        // maxLength: [3500, "Post description cannot exceed 350 characters"],
     },
     category: {
         type: String,
-        required: [true, "Please enter the job category"],
+        required: [true, "Please enter the Post category"],
     },
     country: {
         type: String,
@@ -55,16 +55,57 @@ const postSchema = new mongoose.Schema({
           enum: ["Employer"],
           required: true,
         },
-      },
-      images: {
-        type: [imageSchema],
-        required: true,
-        validate: [arrayLimit, '{PATH} exceeds the limit of 5']
-      },
+    },
+    images: {
+      type: [imageSchema],
+      required: true,
+      validate: [arrayLimit, '{PATH} exceeds the limit of 6']
+    },
+    
+
+    
+    // virtualHost:{
+    //   imgage:{
+    //     type:String
+    //   },
+    //   about:{
+    //     type:String
+    //   }
+    // },
+    guideName:{
+      type:String
+    },
+    lat: {
+      type: Number,
+      // required: true
+    },
+    lng: {
+      type: Number,
+      // required: true
+    },
+    todo1:{
+      type:String
+    },
+    todo2:{
+      type:String
+    },
+    todo3:{
+      type:String
+    },
+    todo4:{
+      type:String
+    },
+    neighburHood:{
+      type:String
+    },
+    guideName:{
+      type:String
+    }
+    
 });
 
 function arrayLimit(val) {
-  return val.length <= 5;
+  return val.length <= 6;
 }
 
 export const Post = mongoose.model("Post", postSchema);
