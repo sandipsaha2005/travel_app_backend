@@ -1,12 +1,14 @@
 import express from 'express'
-import {register,login,logout,getUser,testGetApi} from '../controllers/userController.js'
+import {register,login,logout,getUser,createBooking,getAllBookings} from '../controllers/userController.js'
 import {isAuthorized} from '../middlewares/auth.js'
 import { catchAsyncError } from '../middlewares/catchAsyncError.js'
 const router= express.Router()
 router.post('/register', register)
-router.get('/test', testGetApi)
+// router.get('/test', testGetApi)
 router.post('/login', login)
 router.get('/logout',isAuthorized,logout)
 router.get('/getuser',isAuthorized,getUser)
+router.get('/getbookings',isAuthorized,getAllBookings)
+router.post('/create-booking',isAuthorized,createBooking)
 
 export default router;
