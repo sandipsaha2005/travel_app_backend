@@ -62,8 +62,8 @@ export const getUser = catchAsyncError((req, res, next) => {
 
 
 export const createBooking= async (req,res,next)=>{
-    const {name,email,phone,fromDate,toDate,people,destinationId,destinationName,destinationLocation}=req.body;
-    if(!name || !email || !phone || !fromDate || !toDate || !people || !destinationId || !destinationName || !destinationLocation){
+    const {name,email,phone,fromDate,toDate,people,destinationId,destinationName,destinationLocation,userId}=req.body;
+    if(!name || !email || !phone || !fromDate || !toDate || !people || !destinationId || !destinationName || !destinationLocation ){
         return next(new ErrorHandler("Please provid requried details", 400))
     }
     const booking=await BookingSchema.create({
@@ -75,18 +75,73 @@ export const createBooking= async (req,res,next)=>{
         people,
         destinationId,
         destinationName,
-        destinationLocation
+        destinationLocation,
+        userId
     });
     res.status(200).json({
         success: true,
         message: "Booking Created Successfully",
         booking,
       });
-
-
-
 }
 
+export const updateBooking = async (req, res, next) => {
+    const {
+      name,
+      email,
+      phone,
+      fromDate,
+      toDate,
+      people,
+      
+      
+    } = req.body;
+    const { id } = req.params;
+    console.log(id);
+    if (!id) {
+      return next(new ErrorHandler("Booking ID is required", 400));
+    }
+  
+    if (
+      !name ||
+      !email ||
+      !phone ||
+      !fromDate ||
+      !toDate ||
+      !people 
+     
+    ) {
+      return next(new ErrorHandler("Please provide required details", 400));
+    }
+  
+    try {
+      const booking = await BookingSchema.findById(id);
+  
+      if (!booking) {
+        return next(new ErrorHandler("Booking not found", 404));
+      }
+  
+      booking.name = name;
+      booking.email = email;
+      booking.phone = phone;
+      booking.fromDate = fromDate;
+      booking.toDate = toDate;
+      booking.people = people;
+      
+  
+      await booking.save();
+  
+      res.status(200).json({
+        success: true,
+        message: "Booking updated successfully",
+        booking,
+      });
+    } catch (error) {
+      next(new ErrorHandler("Failed to update booking", 500));
+    }
+  };
+
+  
 export const getAllBookings = async(req,res,next)=>{
     const activeBookings=await BookingSchema.find();
 
@@ -98,3 +153,34 @@ export const getAllBookings = async(req,res,next)=>{
         posts: activeBookings
     });
 }
+export const getSpecBookings = async(req,res,next)=>{
+    const bookId=req.params.id;
+    const Bookings=await BookingSchema.findById(bookId);
+
+    if (!Bookings) {
+        return next(new ErrorHandler('No active bookings found', 400));
+    }
+    res.status(200).json({
+        success: true,
+        posts: Bookings
+    });
+}
+
+export const getBookingById = async (req, res, next) => {
+    const userId = req.params.id;
+    try {
+        console.log(userId);
+        const booking = await BookingSchema.find({userId:userId});
+        console.log(booking);
+        if (!booking) {
+            return next(new ErrorHandler('Booking not found', 400));
+        }
+
+        res.status(200).json({
+            success: true,
+            booking
+        });
+    } catch (error) {
+        return next(new ErrorHandler('Server Error', 500));
+    }
+};

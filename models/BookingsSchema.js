@@ -33,6 +33,9 @@ const bookingSchema=new mongoose.Schema({
     destinationLocation:{
         type:String
     },
+    userId:{
+        type:mongoose.Schema.Types.ObjectId
+    }
 })
 
 export const BookingSchema= mongoose.model("BookingSchema",bookingSchema);
