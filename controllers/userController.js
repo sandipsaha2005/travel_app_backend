@@ -59,13 +59,25 @@ export const getUser = catchAsyncError((req, res, next) => {
     });
   });
   
-
+  const validateStartDateBeforeEndDate = (startDate, endDate) => {
+    const currentDate = new Date(); 
+  
+    if (!startDate || !endDate || new Date(startDate) < currentDate || new Date(endDate) < currentDate) {
+      return false;
+    }
+    
+    return new Date(startDate) <= new Date(endDate);
+  };
 
 export const createBooking= async (req,res,next)=>{
-    const {name,email,phone,fromDate,toDate,people,destinationId,destinationName,destinationLocation,userId}=req.body;
+    const {name,email,phone,fromDate,toDate,people,destinationId,destinationName,destinationLocation,userId,approved}=req.body;
     if(!name || !email || !phone || !fromDate || !toDate || !people || !destinationId || !destinationName || !destinationLocation ){
         return next(new ErrorHandler("Please provid requried details", 400))
     }
+    if (!validateStartDateBeforeEndDate(fromDate, toDate)) {
+        return next(new ErrorHandler("End date cannot be before start date and Past Dates are not allowed", 400));
+      }
+
     const booking=await BookingSchema.create({
         name,
         email,
@@ -76,7 +88,8 @@ export const createBooking= async (req,res,next)=>{
         destinationId,
         destinationName,
         destinationLocation,
-        userId
+        userId,
+        approved
     });
     res.status(200).json({
         success: true,
@@ -101,14 +114,14 @@ export const updateBooking = async (req, res, next) => {
     if (!id) {
       return next(new ErrorHandler("Booking ID is required", 400));
     }
-  
+
     if (
       !name ||
       !email ||
       !phone ||
       !fromDate ||
       !toDate ||
-      !people 
+      !people
      
     ) {
       return next(new ErrorHandler("Please provide required details", 400));
@@ -184,3 +197,31 @@ export const getBookingById = async (req, res, next) => {
         return next(new ErrorHandler('Server Error', 500));
     }
 };
+
+export const approve=async(req,res,nexy)=>{
+    const {
+        approved
+      } = req.body;
+      const { id } = req.params;
+      console.log(approved);
+      if (!id) {
+        return next(new ErrorHandler("Booking ID is required", 400));
+      }
+      try {
+        const booking = await BookingSchema.findById(id);
+    
+        if (!booking) {
+          return next(new ErrorHandler("Booking not found", 404));
+        }
+    
+        booking.approved=approved;
+        await booking.save();
+        res.status(200).json({
+          success: true,
+          message: "Booking updated successfully",
+          booking,
+        });
+      } catch (error) {
+        next(new ErrorHandler("Failed to update booking", 500));
+      }
+}
